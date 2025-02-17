@@ -20,5 +20,8 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "dependencies": {
+    "@auth0/nextjs-auth0": "^4.0.1"
+  }
 }
