@@ -27,6 +27,7 @@ jobs:
         pip install --upgrade pip
         pip install -r requirements.txt
         npm i
+        npx turbo telemetry disable
 
     - name: Install frontend dependencies
       run: |
