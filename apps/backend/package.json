@@ -4,8 +4,12 @@
     "description": "FastAPI backend server",
     "scripts": {
         "dev": "uvicorn src.main:app --reload --port 8000",
-        "start": "uvicorn src.main:app --port 8000"
+        "start": "uvicorn src.main:app --port 8000",
+        "build": "cross-env PYTHONPATH=$(pwd)/../../ pytest"
     },
     "dependencies": {
+    },
+    "devDependencies": {
+        "cross-env": "^7.0.3"
     }
 }

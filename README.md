@@ -50,3 +50,11 @@ An uniform platform to manage, the resposne of first responders to incidents, an
     ```bash
     npm run dev
     ```
+
+## Running Tests
+
+To run the tests, use the following command:
+
+```bash
+pytest
+```
