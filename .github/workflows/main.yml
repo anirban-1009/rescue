@@ -26,6 +26,12 @@ jobs:
         source .venv/bin/activate
         pip install --upgrade pip
         pip install -r requirements.txt
+        npm i
+
+    - name: Install frontend dependencies
+      run: |
+        cd apps/frontend
+        npm i
 
     - name: Run tests
       run: |
