@@ -1,4 +1,4 @@
-name: Python application
+name: Rescue Application build run
 
 on:
   push:
