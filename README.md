@@ -59,3 +59,8 @@ To run the tests, use the following command:
 pytest
 ```
 
+## References
+
+[NextJs Auth0 SDK Documentation](https://github.com/auth0/nextjs-auth0/blob/main/EXAMPLES.md)
+
+[Stych RBAC](https://stytch.com/docs/guides/authorization/rbac)
