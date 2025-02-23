@@ -1,8 +1,6 @@
-"use server";
-
 import Home from "../components/home";
-import { auth0 } from "@/lib/auth0";
 import Link from "next/link";
+import { auth0 } from "@/lib/auth0";
 
 export default async function Page() {
 

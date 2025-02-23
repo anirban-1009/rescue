@@ -67,3 +67,8 @@ pytest
 - [RBAC Auth0 Reference](http://auth0.com/blog/assign-default-role-on-sign-up-with-actions/)
 - [RBAC Youtube Video](https://youtu.be/1-kq6llhQDI)
 - [Flask Auth0 Reference](https://auth0.com/blog/build-and-secure-fastapi-server-with-auth0/)
+
+### MongoDB
+
+- [Mongo DB Community documentation](https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-os-x/)
+- [Mongo DB Fast API Tutorial](https://www.mongodb.com/developer/languages/python/python-quickstart-fastapi/)
