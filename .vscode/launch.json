@@ -1,0 +1,59 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Frontend",
+            "type": "node",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/apps/frontend",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": [
+                "run",
+                "dev"
+            ],
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Debug Backend",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "uvicorn",
+            "args": [
+                "src.main:app",
+                "--reload",
+                "--port",
+                "8000"
+            ],
+            "cwd": "${workspaceFolder}/apps/backend",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/apps/backend"
+            }
+        },
+        {
+            "name": "Turbo Dev",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/node_modules/turbo/bin/turbo",
+            "args": ["run", "dev"],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Debug Full Stack",
+            "configurations": ["Debug Backend", "Debug Frontend"],
+            "stopAll": true,
+            "presentation": {
+                "order": 1,
+                "group": "1_fullstack"
+            }
+        }
+    ]
+}
