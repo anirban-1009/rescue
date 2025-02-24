@@ -41,5 +41,8 @@ yarn-error.log*
 package-lock.json
 
 
-__pycache__/
+/__pycache__/
 package-lock.json
+
+*.pyc
+.gitignore
