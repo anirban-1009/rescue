@@ -1,8 +1,13 @@
 import motor.motor_asyncio
 from bson.objectid import ObjectId
+import os
 
 
-MONGO_DETAILS = "mongodb://localhost:27017"
+IS_CI = os.getenv("CI", "false") == "true"
+MONGO_DETAILS = os.getenv(
+"MONGODB_URL", 
+    "mongodb://localhost:42069/?replicaSet=test-rs" if IS_CI else "mongodb://localhost:27017"
+)
 
 client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_DETAILS)
 
