@@ -5,7 +5,7 @@
     "scripts": {
         "dev": "uvicorn server.app:app --reload --port 8000",
         "start": "uvicorn server.app:app --port 8000",
-        "build": "cross-env PYTHONPATH=$(pwd)/../../ pytest"
+        "build": "cross-env PYTHONPATH=$(pwd) pytest"
     },
     "dependencies": {
     },
