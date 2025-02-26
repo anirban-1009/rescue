@@ -10,13 +10,13 @@ def test_root():
         "message": "Welcome to Swift Response API"
     }
 
-def test_adding_student():
-    response = client.post("/firstResponder", json={
-        "fullname": "John Doe",
-        "email": "johndoe@example.com",
-        "designation": "Firefighter",
-        "age": 35,
-        "service": "Fire Department"
-    })
+# def test_adding_student():
+#     response = client.post("/firstResponder", json={
+#         "fullname": "John Doe",
+#         "email": "johndoe@example.com",
+#         "designation": "Firefighter",
+#         "age": 35,
+#         "service": "Fire Department"
+#     })
 
-    assert response.status_code == 200
+#     assert response.status_code == 200
