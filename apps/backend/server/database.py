@@ -11,62 +11,63 @@ MONGO_DETAILS = os.getenv(
 
 client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_DETAILS)
 
-database = client.students
+database = client.rescue_firstResponder
 
-student_collection = database.get_collection("students_collection")
+firstResponder_collection = database.get_collection("rescue_firstResponder")
 
+firstResponder_collection.create_index("email", unique=True)
 
-def student_helper(student) -> dict:
+def firstResponder_helper(firstResponder) -> dict:
     return {
-        "id": str(student["_id"]),
-        "fullname": student["fullname"],
-        "email": student["email"],
-        "course_of_study": student["course_of_study"],
-        "year": student["year"],
-        "GPA": student["gpa"],
+        "id": str(firstResponder["_id"]),
+        "fullname": firstResponder["fullname"],
+        "email": firstResponder["email"],
+        "designation": firstResponder["designation"],
+        "service": firstResponder["service"],
+        "age": firstResponder["age"],
     }
 
 # Retrieve all students present in the database
-async def retrieve_students():
-    students = []
-    async for student in student_collection.find():
-        students.append(student_helper(student))
-    return students
+async def retrieve_firstResponders():
+    firstResponders = []
+    async for student in firstResponder_collection.find():
+        firstResponders.append(firstResponder_helper(student))
+    return firstResponders
 
 
 # Add a new student into to the database
-async def add_student(student_data: dict) -> dict:
-    student = await student_collection.insert_one(student_data)
-    new_student = await student_collection.find_one({"_id": student.inserted_id})
-    return student_helper(new_student)
+async def add_firstResponder(firstResponders_data: dict) -> dict:
+    firstResponder = await firstResponder_collection.insert_one(firstResponders_data)
+    new_firstResponder = await firstResponder_collection.find_one({"_id": firstResponder.inserted_id})
+    return firstResponder_helper(new_firstResponder)
 
 
 # Retrieve a student with a matching ID
-async def retrieve_student(id: str) -> dict:
-    student = await student_collection.find_one({"_id": ObjectId(id)})
-    if student:
-        return student_helper(student)
+async def retrieve_firstResponder(id: str) -> dict:
+    firstResponder = await firstResponder_collection.find_one({"_id": ObjectId(id)})
+    if firstResponder:
+        return firstResponder_helper(firstResponder)
 
 
 # Update a student with a matching ID
-async def update_student(id: str, data: dict):
+async def update_firstResponder(id: str, data: dict):
     # Return false if an empty request body is sent.
     if len(data) < 1:
         return False
-    student = await student_collection.find_one({"_id": ObjectId(id)})
-    if student:
-        updated_student = await student_collection.update_one(
+    firstResponder = await firstResponder_collection.find_one({"_id": ObjectId(id)})
+    if firstResponder:
+        updated_firstResponder = await firstResponder_collection.update_one(
             {"_id": ObjectId(id)}, {"$set": data}
         )
-        if updated_student:
+        if updated_firstResponder:
             return True
         return False
 
 
 # Delete a student from the database
-async def delete_student(id: str):
-    student = await student_collection.find_one({"_id": ObjectId(id)})
+async def delete_firstResponder(id: str):
+    student = await firstResponder_collection.find_one({"_id": ObjectId(id)})
     if student:
-        await student_collection.delete_one({"_id": ObjectId(id)})
+        await firstResponder_collection.delete_one({"_id": ObjectId(id)})
         return True
 

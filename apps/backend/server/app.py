@@ -1,12 +1,25 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from server.routes.firstResponder import router as FirstResponderRouter
 
-from server.routes.students import router as StudentRouter
+app = FastAPI(
+    title="Swift Response API",
+    description="API for First Responder Management System",
+    version="1.0.0"
+)
 
-app = FastAPI()
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-app.include_router(StudentRouter, tags=["Student"], prefix="/student")
-
+# Include routers
+app.include_router(FirstResponderRouter, tags=["First Responders"], prefix="/firstResponder")
 
 @app.get("/", tags=["Root"])
 async def read_root():
-    return {"message": "Welcome to this fantastic app!"}
+    return {"message": "Welcome to Swift Response API"}

@@ -1,6 +1,6 @@
-# Swift Response Backend
+# Rescue Backend
 
-FastAPI backend for the Swift Response application.
+FastAPI backend for the Rescue application.
 
 ## References
 
