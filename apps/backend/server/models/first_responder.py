@@ -26,7 +26,7 @@ class FirstResponderSchema(BaseModel):
 
 def ResponseModel(data: Optional[FirstResponder], message):
     return {
-        "data": [data.model_dump()],
+        "data": [data],
         "code": 200,
         "message": message,
     }
