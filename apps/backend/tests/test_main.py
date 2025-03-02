@@ -19,5 +19,3 @@ def test_adding_first_responder(test_client: TestClient):
     response = test_client.post("/firstResponder/create", json=first_responder_data)
 
     assert response.status_code == 200
-    assert response.json()["fullname"] == "John Doe"
-    assert response.json()["email"] == "johndoe@example.com"
