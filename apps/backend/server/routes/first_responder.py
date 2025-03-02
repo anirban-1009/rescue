@@ -14,4 +14,4 @@ router = APIRouter()
 async def add_firstResponder_data(firstResponder: FirstResponderSchema = Body(...)):
     firstResponder = jsonable_encoder(firstResponder)
     new_firstResponder:FirstResponder = await FirstResponderHandler().add_firstResponder(firstResponder)
-    return ResponseModel(new_firstResponder, "First responder added successfully.")
+    return ResponseModel(new_firstResponder, "First responder added successfully.", code=201)

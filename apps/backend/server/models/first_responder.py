@@ -24,10 +24,10 @@ class FirstResponderSchema(BaseModel):
 
 
 
-def ResponseModel(data: Optional[FirstResponder], message):
+def ResponseModel(data: Optional[FirstResponder], message, code):
     return {
         "data": [data.model_dump()],
-        "code": 200,
+        "code": code,
         "message": message,
     }
 

@@ -1,8 +1,6 @@
 """ Module to create a base client for the MONGODB connection and is modular. """
 
 import motor.motor_asyncio
-from bson.objectid import ObjectId
-from dataclasses import dataclass
 import os
 
 class BaseMongoHandler:
