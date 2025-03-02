@@ -1,4 +1,4 @@
-
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, EmailStr, Field
 from typing import Annotated, Literal, Optional
 
@@ -24,13 +24,23 @@ class FirstResponderSchema(BaseModel):
 
 
 
-def ResponseModel(data: Optional[FirstResponder], message):
-    return {
-        "data": [data],
-        "code": 200,
-        "message": message,
-    }
+def ResponseModel(data: Optional[FirstResponder], message: str):
+    return JSONResponse(
+        status_code=200,
+        content={
+            "data": [data] if data else [],
+            "code": 200,
+            "message": message
+        }
+    )
 
 
 def ErrorResponseModel(error, code, message):
-    return {"error": error, "code": code, "message": message}
+    return JSONResponse(
+        status_code=code,
+        content={
+            "error": error,
+            "code": code,
+            "message": message
+        }
+    )
