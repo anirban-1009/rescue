@@ -4,12 +4,7 @@
 
 import axios from "axios";
 import { getManagementApiToken } from "./authHandler";
-
-export type UserRole = {
-    id: string;
-    name: string;
-    description: string;
-};
+import { UserRole } from "@/lib/types/User";
 
 export const getUserRole = async (user_id: string): Promise<[UserRole]> => {
     const token = await getManagementApiToken();
@@ -29,7 +24,7 @@ export const getUserRole = async (user_id: string): Promise<[UserRole]> => {
                 },
             }
         );
-        return response.data;
+        return response.data as [UserRole];
     }catch (error) {
         console.error("Error fetching User Role:", error);
         throw new Error("Failed to retrieve User Role");

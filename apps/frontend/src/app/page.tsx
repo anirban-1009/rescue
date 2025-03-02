@@ -1,20 +1,32 @@
-import Home from "../components/home";
-import Link from "next/link";
-import { auth0 } from "@/lib/auth0";
 
-export default async function Page() {
+import { auth0 } from '@/lib/auth0';
 
+
+import UserHome from './components/basicUser';
+import ClientComponent from './components/clientComponents/homepage';
+import { UserRole } from '@/lib/types/User';
+import { getUserRole } from '@/actions/userHandler';
+import Home from './components/home';
+
+
+export default async function HomePage() {
   const session = await auth0.getSession();
-
-  if (!session){
-    return (
-      <Home />
-    )
+  let userRoles: UserRole[] = [];
+  
+  if (session?.user.sub) {
+    userRoles = await getUserRole(session.user.sub);
   }
+
   return (
-    <div className="flex flex-col items-center justify-center w-dvw h-dvh text-2xl">
-      <a className="text-2xl">Hello - {session.user.name}</a><br/>
-      <Link href="/auth/logout" className="h-fit w-fit py-2 px-7 dark:text-black bg-white rounded-full">Logout</Link>
-    </div>
-  )
+    <>
+      <ClientComponent session={session} userRoles={userRoles} />
+      {!session ? (
+        <Home />
+      ) : userRoles.find((role: { name: string }) => role.name === "Basic User") ? (
+        <UserHome />
+      ) : (
+        <div>Access Denied</div>
+      )}
+    </>
+  );
 }

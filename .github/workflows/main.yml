@@ -38,11 +38,6 @@ jobs:
         mongodb-replica-set: test-rs
         mongodb-port: 42069
 
-    - name: Disable telemetry
-      run: |
-        npx turbo telemetry disable
-        npx next telemetry disable
-
     - name: Install dependencies
       run: |
         python -m venv .venv
@@ -50,6 +45,11 @@ jobs:
         pip install --upgrade pip
         pip install -r requirements.txt
         npm install
+
+    - name: Disable telemetry
+      run: |
+        npx turbo telemetry disable
+        npx next telemetry disable
 
     - name: Install frontend dependencies
       run: |
