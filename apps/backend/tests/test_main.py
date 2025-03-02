@@ -16,6 +16,6 @@ def test_adding_first_responder(test_client: TestClient):
         "service": "Fire Department"
     }
 
-    response = test_client.post("/firstResponder/create", json=first_responder_data)
+    response = test_client.post("/v1/firstResponder/create", json=first_responder_data)
 
     assert response.status_code == 200
