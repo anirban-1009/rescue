@@ -22,4 +22,4 @@ app.include_router(FirstResponderRouter, tags=["First Responders"], prefix="/v1/
 
 @app.get("/", tags=["Root"])
 async def read_root():
-    return {"message": "Welcome to Swift Response API"}
+    return {"message": "Welcome to Rescue API"}

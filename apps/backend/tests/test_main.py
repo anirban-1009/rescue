@@ -4,7 +4,7 @@ def test_root(test_client: TestClient):
     """Test root endpoint returns welcome message."""
     response = test_client.get("/")
     assert response.status_code == 200
-    assert response.json() == {"message": "Welcome to Swift Response API"}
+    assert response.json() == {"message": "Welcome to Rescue API"}
 
 
 # def test_adding_first_responder(test_client: TestClient):
