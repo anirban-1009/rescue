@@ -12,6 +12,7 @@
     "@auth0/nextjs-auth0": "^4.0.2",
     "axios": "^1.7.9",
     "crypto-js": "^4.2.0",
+    "leaflet": "^1.9.4",
     "next": "15.1.7",
     "node-cache": "^5.1.2",
     "react": "^19.0.0",
@@ -19,6 +20,7 @@
   },
   "devDependencies": {
     "@types/crypto-js": "^4.2.2",
+    "@types/leaflet": "^1.9.16",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

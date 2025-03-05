@@ -35,7 +35,7 @@ def ResponseModel(data: Optional[FirstResponder], message: str):
     )
 
 
-def ErrorResponseModel(error, code, message):
+def ErrorResponseModel(error: str, code: int, message: str):
     return JSONResponse(
         status_code=code,
         content={
