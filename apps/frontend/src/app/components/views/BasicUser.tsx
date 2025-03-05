@@ -1,5 +1,4 @@
 import ClientComponentBasicUser from "../clientComponents/BasicUserClient";
-import NavBar from "../layout/NavBAR";
 
 type HomePageProps = {
     session: any;

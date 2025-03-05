@@ -8,43 +8,43 @@ An uniform platform to manage, the resposne of first responders to incidents, an
 
 1. Create Virtual environment
 
-   ```bash
-   python -m venv .venv
-   ```
+    ```bash
+    python -m venv .venv
+    ```
 
 2. Activate virtual environment
 
-   ```bash
-   source .venv/bin/activate
-   ```
+    ```bash
+    source .venv/bin/activate
+    ```
 
 3. Install pre-requisite libraries
 
-   ```bash
-   pip install -r requirements.txt
-   ```
+    ```bash
+    pip install -r requirements.txt
+    ```
 
 ### Node
 
 1. Installing monorepo dependencies
 
-   ```bash
-   npm install
-   ```
+    ```bash
+    npm install
+    ```
 
 2. Installing Frontend dependencies
 
-   - Navigate to the frontend application
+    - Navigate to the frontend application
 
-     ```bash
-     cd frontend/
-     ```
+        ```bash
+        cd frontend/
+        ```
 
-   - Install the dependencies
+    - Install the dependencies
 
-     ```bash
-     npm install
-     ```
+        ```bash
+        npm install
+        ```
 
 ## Starting Local Instance
 
@@ -52,9 +52,9 @@ An uniform platform to manage, the resposne of first responders to incidents, an
 
 2. Initiate Local instance
 
-   ```bash
-   npm run dev
-   ```
+    ```bash
+    npm run dev
+    ```
 
 ## Running Tests
 
@@ -87,7 +87,9 @@ pytest
 ## Maps
 
 - [Google Maps Javascript](https://developers.google.com/maps/documentation/javascript)
-
 - [Routing API Valhalla](https://github.com/valhalla/valhalla)
-
 - [Valhalla docs](https://valhalla.github.io/valhalla/)
+
+## PWA (Progessive Web Application)
+
+- [Tutorial on PWA using Nextjs](https://nextjs.org/docs/app/building-your-application/configuring/progressive-web-apps)
