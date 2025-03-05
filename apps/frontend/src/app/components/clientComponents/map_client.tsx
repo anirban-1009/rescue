@@ -32,7 +32,7 @@ export const Map: React.FC<MapProps> = ({ location }) => {
             const map = L.map(mapContainer, {
                 zoomControl: false,
                 attributionControl: false,
-            }).setView(location, 17);
+            }).setView(location, 10);
 
             L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
                 detectRetina: true,
