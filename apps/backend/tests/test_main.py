@@ -1,5 +1,6 @@
 from fastapi.testclient import TestClient
 
+
 def test_root(test_client: TestClient):
     """Test root endpoint returns welcome message."""
     response = test_client.get("/")
