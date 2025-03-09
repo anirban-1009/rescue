@@ -3,9 +3,6 @@ import React from "react";
 
 const NavBar: React.FC<{ children: React.ReactNode }> = ({ children }) => (
     <div className="relative">
-        <div className="absolute top-8 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 bg-white p-4 rounded-lg shadow-md dark:bg-gray-700 dark:text-slate-50">
-            RESCUE
-        </div>
         {children}
         <div className="absolute bottom-0 w-full h-fit left-1/2 transform -translate-x-1/2 z-10 bg-white p-4 rounded-t-lg shadow-md dark:bg-gray-700 dark:text-slate-50">
             <div className="flex justify-center items-center text-2xl gap-24">

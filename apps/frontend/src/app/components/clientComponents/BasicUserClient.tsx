@@ -13,9 +13,5 @@ export default function ClientComponentBasicUser({
     session,
     location,
 }: ClientComponentProps) {
-    return (
-        <NoSsr>
-            <Map location={location} />
-        </NoSsr>
-    );
+    return <Map location={location} />;
 }
