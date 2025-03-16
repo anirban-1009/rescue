@@ -5,7 +5,7 @@ from server.routes.first_responder import router as FirstResponderRouter
 app = FastAPI(
     title="Rescue API",
     description="API for First Responder Management System",
-    version="1.0.0"
+    version="1.0.0",
 )
 
 # Configure CORS
@@ -18,8 +18,11 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(FirstResponderRouter, tags=["First Responders"], prefix="/v1/firstResponder")
+app.include_router(
+    FirstResponderRouter, tags=["First Responders"], prefix="/v1/firstResponder"
+)
+
 
 @app.get("/", tags=["Root"])
 async def read_root():
-    return {"message": "Welcome to Swift Response API"}
+    return {"message": "Welcome to Rescue API"}

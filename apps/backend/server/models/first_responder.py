@@ -4,6 +4,7 @@ from typing import Annotated, Literal, Optional
 
 from server.data_utils.data_classes import FirstResponder
 
+
 class FirstResponderSchema(BaseModel):
     fullname: str = Field(...)
     email: EmailStr = Field(...)
@@ -23,24 +24,14 @@ class FirstResponderSchema(BaseModel):
         }
 
 
-
 def ResponseModel(data: Optional[FirstResponder], message: str):
     return JSONResponse(
         status_code=200,
-        content={
-            "data": [data] if data else [],
-            "code": 200,
-            "message": message
-        }
+        content={"data": [data] if data else [], "code": 200, "message": message},
     )
 
 
-def ErrorResponseModel(error, code, message):
+def ErrorResponseModel(error: str, code: int, message: str):
     return JSONResponse(
-        status_code=code,
-        content={
-            "error": error,
-            "code": code,
-            "message": message
-        }
+        status_code=code, content={"error": error, "code": code, "message": message}
     )
