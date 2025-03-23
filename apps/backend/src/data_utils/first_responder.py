@@ -3,8 +3,8 @@
 from bson.objectid import ObjectId
 from typing import Optional
 
-from src.data_utils.baseHandler import BaseMongoHandler
-from src.data_utils.data_classes import FirstResponder
+from apps.backend.src.data_utils.baseHandler import BaseMongoHandler
+from apps.backend.src.data_utils.data_classes import FirstResponder
 
 
 class FirstResponderHandler(BaseMongoHandler):
