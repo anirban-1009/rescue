@@ -1,8 +1,8 @@
 import pytest
 from fastapi.testclient import TestClient
 from mongomock import MongoClient
-from server.app import app  # Import your FastAPI app
-from server.data_utils.first_responder import FirstResponderHandler, BaseMongoHandler
+from apps.backend.src import main  # Import your FastAPI app
+from src.data_utils.first_responder import FirstResponderHandler, BaseMongoHandler
 
 
 class MockBaseMongoHandler(BaseMongoHandler):
@@ -48,10 +48,10 @@ def test_client(mock_db, mock_firstResponderHandler):
     async def override_firstResponderHandler():
         return mock_firstResponderHandler
 
-    app.dependency_overrides[BaseMongoHandler] = lambda: mock_baseMongoHandler
-    app.dependency_overrides[FirstResponderHandler] = override_firstResponderHandler
+    main.dependency_overrides[BaseMongoHandler] = lambda: mock_baseMongoHandler
+    main.dependency_overrides[FirstResponderHandler] = override_firstResponderHandler
 
-    client = TestClient(app)
+    client = TestClient(main)
     yield client
 
-    app.dependency_overrides.clear()  # Cleanup after tests
+    main.dependency_overrides.clear()  # Cleanup after tests
