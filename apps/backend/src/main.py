@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from apps.backend.src.routes.first_responder import router as FirstResponderRouter
+from apps.backend.src.routes.emergency_centres import router as EmergencyCentreRouter
 
 app = FastAPI(
     title="Rescue API",
@@ -20,6 +21,10 @@ app.add_middleware(
 # Include routers
 app.include_router(
     FirstResponderRouter, tags=["First Responders"], prefix="/v1/firstResponder"
+)
+
+app.include_router(
+    EmergencyCentreRouter, tags=["Emergency Router"], prefix="/v1/emergencyCentre"
 )
 
 

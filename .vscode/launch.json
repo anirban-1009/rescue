@@ -16,8 +16,8 @@
             "type": "debugpy",
             "request": "launch",
             "module": "uvicorn",
-            "args": ["src.main:app", "--reload", "--port", "8000"],
-            "cwd": "${workspaceFolder}/apps/backend/",
+            "args": ["apps.backend.src.main:app", "--reload", "--port", "8000"],
+            "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
             "justMyCode": false,
             "env": {

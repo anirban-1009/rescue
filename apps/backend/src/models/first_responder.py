@@ -29,9 +29,3 @@ def ResponseModel(data: Optional[FirstResponder], message: str):
         status_code=200,
         content={"data": [data] if data else [], "code": 200, "message": message},
     )
-
-
-def ErrorResponseModel(error: str, code: int, message: str):
-    return JSONResponse(
-        status_code=code, content={"error": error, "code": code, "message": message}
-    )
