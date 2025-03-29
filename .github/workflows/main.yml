@@ -41,6 +41,10 @@ jobs:
                   source .venv/bin/activate
                   uv pip install -r requirements.txt
 
+            - name: Install Repo dependecies
+              run: |
+                  npm install --legacy-peer-deps
+
             - name: Start MongoDB
               uses: supercharge/mongodb-github-action@1.6.0
               with:
