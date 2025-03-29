@@ -19,7 +19,6 @@
             "args": ["src.main:app", "--reload", "--port", "8000"],
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
-            "justMyCode": false,
             "env": {
                 "PYTHONPATH": "${workspaceFolder}/apps/backend/"
             }

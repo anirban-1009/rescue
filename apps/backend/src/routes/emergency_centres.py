@@ -48,11 +48,16 @@ async def insert_centre(centre_data: EmergencyCentre = Body(...)):
 
 @router.get("/getNearMe", response_description="Centres near the coordinates")
 async def get_centre(
-    latitude: float = Query(..., description="Latitude of the location"),
-    longitude: float = Query(..., description="Longitude of the location"),
-    max_distance: int = Query(
-        5000, description="Max distance in meters (default: 5000)"
+    latitude: float = Query(
+        ..., description="Latitude of the location", example=17.4493194
     ),
+    longitude: float = Query(
+        ..., description="Longitude of the location", example=78.3749978
+    ),
+    max_distance: int = Query(
+        5000, description="Max distance in meters (default: 5000)", example=5000
+    ),
+    limit: int = Query(5, description="Max centres to be fetched", example=5),
     handler: EmergencyCentreHandler = Depends(get_handler),
 ):
     """
@@ -65,7 +70,7 @@ async def get_centre(
     """
     try:
         results = await handler.get_emergency_centres_nearby(
-            latitude, longitude, max_distance
+            latitude, longitude, max_distance, limit
         )
         if not results:
             raise HTTPException(
@@ -73,5 +78,8 @@ async def get_centre(
             )
         return {"centres": results}
 
+    except HTTPException as http_exc:
+        raise http_exc  # Re-raise known HTTP exceptions
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")

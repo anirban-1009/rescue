@@ -1,9 +1,13 @@
-from src.data_utils.baseHandler import BaseMongoHandler
-from src.models.emergency_centres import EmergencyCentre
+from bson import json_util
+import json
 from typing import Optional
+
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 from pymongo.errors import DuplicateKeyError
+
+from src.data_utils.baseHandler import BaseMongoHandler
+from src.models.emergency_centres import EmergencyCentre
 
 
 class EmergencyCentreHandler(BaseMongoHandler):
@@ -43,34 +47,66 @@ class EmergencyCentreHandler(BaseMongoHandler):
             raise RuntimeError(f"Database Error: {str(e)}")
 
     async def get_emergency_centres_nearby(
-        self, latitude, longitude, max_distance=5000
+        self, latitude, longitude, max_distance=5000, limit=5
     ):
-        """
-        Fetch emergency centres within max_distance (in meters) from given coordinates.
-        :param latitude: Latitude of the search location
-        :param longitude: Longitude of the search location
-        :param max_distance: Search radius in meters (default: 5000m)
-        :return: List of emergency centres in vicinity
-        """
-        await self.collection.create_index([("location", "2dsphere")])
-
-        # Use $geoNear as the first stage in the aggregation pipeline
+        # Calculate distance with Haversine formula
         pipeline = [
+            # Calculate distance using a simpler formula (approximate but efficient)
             {
-                "$geoNear": {
-                    "near": {"type": "Point", "coordinates": [latitude, longitude]},
-                    "distanceField": "distance",
-                    "maxDistance": max_distance,  # Distance in meters
-                    "spherical": True,
+                "$addFields": {
+                    "distance": {
+                        "$multiply": [
+                            111319.9,  # meters per degree (approximate)
+                            {
+                                "$sqrt": {
+                                    "$add": [
+                                        {
+                                            "$pow": [
+                                                {"$subtract": ["$latitude", latitude]},
+                                                2,
+                                            ]
+                                        },
+                                        {
+                                            "$pow": [
+                                                {
+                                                    "$multiply": [
+                                                        {
+                                                            "$subtract": [
+                                                                "$longitude",
+                                                                longitude,
+                                                            ]
+                                                        },
+                                                        {
+                                                            "$cos": {
+                                                                "$degreesToRadians": latitude
+                                                            }
+                                                        },
+                                                    ]
+                                                },
+                                                2,
+                                            ]
+                                        },
+                                    ]
+                                }
+                            },
+                        ]
+                    }
                 }
-            }
+            },
+            # Filter, sort, limit - the most critical operations
+            {"$match": {"distance": {"$lte": max_distance}}},
+            {"$sort": {"distance": 1}},
+            {"$limit": limit},
+            # Handle ObjectId serialization
+            {"$addFields": {"_id": {"$toString": "$_id"}}},
         ]
 
-        # Execute aggregation pipeline
-        results = await self.collection.aggregate(
-            pipeline, maxTimeMS=60000, allowDiskUse=True
-        ).to_list(None)
-        return results
+        results = await self.collection.aggregate(pipeline).to_list(length=None)
+
+        # Additional safety measure: convert all results to JSON-compatible objects
+        json_compatible = json.loads(json_util.dumps(results))
+
+        return json_compatible
 
 
 def ResponseModel(data: Optional[EmergencyCentre], message: str):
