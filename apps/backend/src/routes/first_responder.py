@@ -2,13 +2,13 @@ from fastapi import APIRouter, Body
 from fastapi.encoders import jsonable_encoder
 from pymongo.errors import DuplicateKeyError
 
-from apps.backend.src.data_utils.first_responder import FirstResponderHandler
-from apps.backend.src.models.first_responder import (
+from src.data_utils.first_responder import FirstResponderHandler
+from src.models.first_responder import (
     ResponseModel,
     FirstResponderSchema,
 )
-from apps.backend.src.utils.error_handlers import ErrorResponseModel
-from apps.backend.src.data_utils.data_classes import FirstResponder
+from src.utils.error_handlers import ErrorResponseModel
+from src.data_utils.data_classes import FirstResponder
 
 router = APIRouter()
 

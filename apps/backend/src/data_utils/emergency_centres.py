@@ -1,5 +1,5 @@
-from apps.backend.src.data_utils.baseHandler import BaseMongoHandler
-from apps.backend.src.models.emergency_centres import EmergencyCentre
+from src.data_utils.baseHandler import BaseMongoHandler
+from src.models.emergency_centres import EmergencyCentre
 from typing import Optional
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError

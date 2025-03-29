@@ -1,6 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
-from apps.backend.src.main import app  # Ensure this matches your actual file structure
+from src.main import app  # Ensure this matches your actual file structure
 
 
 @pytest.fixture

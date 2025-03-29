@@ -2,7 +2,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, EmailStr, Field
 from typing import Annotated, Literal, Optional
 
-from apps.backend.src.data_utils.data_classes import FirstResponder
+from src.data_utils.data_classes import FirstResponder
 
 
 class FirstResponderSchema(BaseModel):

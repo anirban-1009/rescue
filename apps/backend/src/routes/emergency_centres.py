@@ -3,19 +3,19 @@ from fastapi.encoders import jsonable_encoder
 from fastapi import Query, HTTPException, Depends
 
 
-from apps.backend.src.models.emergency_centres import EmergencyCentre
-from apps.backend.src.data_utils.emergency_centres import (
+from src.models.emergency_centres import EmergencyCentre
+from src.data_utils.emergency_centres import (
     EmergencyCentreHandler,
     ResponseModel,
 )
-from apps.backend.src.utils.error_handlers import ErrorResponseModel
+from src.utils.error_handlers import ErrorResponseModel
 from pymongo.errors import DuplicateKeyError
 
 router = APIRouter()
 
 
 async def get_handler():
-    from apps.backend.src.data_utils.emergency_centres import EmergencyCentreHandler
+    from src.data_utils.emergency_centres import EmergencyCentreHandler
 
     return EmergencyCentreHandler()
 

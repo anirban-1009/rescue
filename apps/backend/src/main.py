@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from apps.backend.src.routes.first_responder import router as FirstResponderRouter
-from apps.backend.src.routes.emergency_centres import router as EmergencyCentreRouter
+from src.routes.first_responder import router as FirstResponderRouter
+from src.routes.emergency_centres import router as EmergencyCentreRouter
 
 app = FastAPI(
     title="Rescue API",

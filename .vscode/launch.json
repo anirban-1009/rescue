@@ -16,12 +16,12 @@
             "type": "debugpy",
             "request": "launch",
             "module": "uvicorn",
-            "args": ["apps.backend.src.main:app", "--reload", "--port", "8000"],
+            "args": ["src.main:app", "--reload", "--port", "8000"],
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
             "justMyCode": false,
             "env": {
-                "PYTHONPATH": "${workspaceFolder}/apps/backend/src"
+                "PYTHONPATH": "${workspaceFolder}/apps/backend/"
             }
         },
         {
