@@ -1,87 +1,86 @@
-import json
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
-from bson import json_util, ObjectId
+from unittest.mock import AsyncMock, patch
+from bson import ObjectId
+from fastapi.testclient import TestClient
+from fastapi import status
 from pymongo.errors import DuplicateKeyError
-from src.data_utils.emergency_centres import EmergencyCentreHandler
+
+# Import your FastAPI app - adjust the import path as needed
+from src.main import app
 
 
-class TestEmergencyCentreHandler:
+class TestEmergencyCentreAPI:
     @pytest.fixture
-    def mock_emergency_handler(self):
-        """Mock the EmergencyCentreHandler with a patched database connection."""
-        with patch(
-            "src.data_utils.emergency_centres.EmergencyCentreHandler.__init__",
-            return_value=None,
-        ):
-            handler = EmergencyCentreHandler()
-            handler.database = MagicMock()
+    def client(self):
+        """Create a FastAPI test client."""
+        return TestClient(app)
 
-            # Create a properly structured mock for aggregate
-            aggregate_mock = MagicMock()
-            to_list_mock = AsyncMock()
-            aggregate_mock.return_value.to_list = to_list_mock
-
-            handler.collection = MagicMock()
-            handler.collection.aggregate = aggregate_mock
-            handler.collection.insert_one = AsyncMock()
-            handler.collection.find_one = AsyncMock()
-
-            return handler
-
-    @pytest.mark.asyncio
-    async def test_get_emergency_centres_nearby(self, mock_emergency_handler):
-        """Test fetching emergency centres with $geoNear aggregation."""
+    @patch(
+        "src.data_utils.emergency_centres.EmergencyCentreHandler.get_emergency_centres_nearby"
+    )
+    def test_get_centres_near_me(self, mock_get_centres_nearby, client):
+        """Test the GET /v1/emergencyCentre/getNearMe endpoint."""
         # Mock data
         mock_results = [
             {
-                "_id": ObjectId("507f1f77bcf86cd799439011"),
+                "_id": str(ObjectId("507f1f77bcf86cd799439011")),
                 "facility_name": "City Hospital",
                 "district": "Downtown",
                 "latitude": 40.7128,
                 "longitude": -74.0060,
                 "distance": 1200.50,
-            },
-            {
-                "_id": ObjectId("507f1f77bcf86cd799439012"),
-                "facility_name": "Community Clinic",
-                "district": "Uptown",
-                "latitude": 40.7135,
-                "longitude": -74.0070,
-                "distance": 2500.75,
+                "state": "Test State",
+                "facility_type": "Hospital",
             },
         ]
 
-        # Configure the mock aggregate method
-        mock_emergency_handler.collection.aggregate.return_value.to_list.return_value = mock_results
+        # Configure the mock method directly
+        mock_get_centres_nearby.return_value = mock_results
 
         # Test parameters
-        lat, lng, max_dist, limit = 40.7130, -74.0065, 3000, 2
+        lat, lng = 17.4493194, 78.3749978
+        max_dist, limit = 5000, 5
 
-        # Call the method
-        results = await mock_emergency_handler.get_emergency_centres_nearby(
-            latitude=lat, longitude=lng, max_distance=max_dist, limit=limit
+        # Make the request
+        response = client.get(
+            f"/v1/emergencyCentre/getNearMe?latitude={lat}&longitude={lng}&max_distance={max_dist}&limit={limit}"
         )
 
-        # Verify aggregate was called correctly
-        mock_emergency_handler.collection.aggregate.assert_called_once()
-        pipeline = mock_emergency_handler.collection.aggregate.call_args[0][0]
+        # Assert that the response is successful
+        assert response.status_code == status.HTTP_200_OK
 
-        # Ensure the pipeline is structured properly
-        assert any(stage.get("$addFields") for stage in pipeline), (
-            "Missing $addFields stage"
+        # Assert that the handler method was called with correct parameters
+        mock_get_centres_nearby.assert_called_once_with(lat, lng, max_dist, limit)
+
+        # Assert that the response data matches the expected structure with 'centres' key
+        assert response.json() == {"centres": mock_results}
+
+    @patch("src.routes.emergency_centres.get_handler")
+    def test_get_centres_near_me_not_found(self, mock_get_handler, client):
+        """Test the GET /v1/emergencyCentre/getNearMe endpoint when no centres are found."""
+        # Configure the mock handler
+        mock_handler = AsyncMock()
+        mock_handler.get_emergency_centres_nearby = AsyncMock(return_value=[])
+        mock_get_handler.return_value = mock_handler
+
+        # Test parameters
+        lat, lng = 90.4493194, 78.3749978
+
+        # Make the request
+        response = client.get(
+            f"/v1/emergencyCentre/getNearMe?latitude={lat}&longitude={lng}"
         )
-        assert any(stage.get("$match") for stage in pipeline), "Missing $match stage"
-        assert any(stage.get("$sort") for stage in pipeline), "Missing $sort stage"
-        assert any(stage.get("$limit") for stage in pipeline), "Missing $limit stage"
 
-        # Verify JSON conversion
-        expected_result = json.loads(json_util.dumps(mock_results))
-        assert results == expected_result
+        # Assert that the response is a 404 not found
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+        assert "No emergency centres found nearby" in response.json()["detail"]
 
-    @pytest.mark.asyncio
-    async def test_add_centre_success(self, mock_emergency_handler):
-        """Test successfully adding a new emergency centre."""
+    @patch("src.routes.emergency_centres.EmergencyCentreHandler")
+    @patch("src.routes.emergency_centres.jsonable_encoder")
+    def test_create_centre_success(
+        self, mock_jsonable_encoder, mock_handler_class, client
+    ):
+        """Test successfully adding a new emergency centre through the POST /create endpoint."""
         # Include the required fields state and facility_type
         centre_data = {
             "facility_name": "Test Hospital",
@@ -90,66 +89,136 @@ class TestEmergencyCentreHandler:
             "longitude": -74.0060,
             "address": "123 Test St",
             "contact_no": "123-456-7890",
-            "state": "Test State",  # Added required field
-            "facility_type": "Hospital",  # Added required field
+            "state": "Test State",
+            "facility_type": "Hospital",
         }
 
-        # Mock EmergencyCentre.model_validate
-        with patch(
-            "src.models.emergency_centres.EmergencyCentre.model_validate"
-        ) as mock_validate:
-            # Create a mock validated model that has model_dump method
-            validated_model = MagicMock()
-            validated_model.model_dump.return_value = centre_data.copy()
-            mock_validate.return_value = validated_model
+        # Configure the jsonable_encoder mock
+        mock_jsonable_encoder.return_value = centre_data
 
-            # Mock insert_one response
-            mock_id = ObjectId("507f1f77bcf86cd799439013")
-            insert_result = MagicMock()
-            insert_result.inserted_id = mock_id
-            mock_emergency_handler.collection.insert_one.return_value = insert_result
+        # Configure the handler instance mock
+        mock_handler_instance = AsyncMock()
+        mock_handler_class.return_value = mock_handler_instance
 
-            # Mock find_one response
-            returned_doc = centre_data.copy()
-            returned_doc["_id"] = mock_id
-            mock_emergency_handler.collection.find_one.return_value = returned_doc
+        # Configure the add_centre method to return the created centre
+        created_centre = centre_data.copy()
+        created_centre["_id"] = str(ObjectId("507f1f77bcf86cd799439013"))
+        mock_handler_instance.add_centre.return_value = created_centre
 
-            # Call method
-            await mock_emergency_handler.add_centre(centre_data)
+        # Make the request
+        response = client.post(
+            "/v1/emergencyCentre/create",
+            json=centre_data,
+        )
 
-            # Assert insert_one and find_one calls
-            mock_emergency_handler.collection.insert_one.assert_called_once()
-            mock_emergency_handler.collection.find_one.assert_called_once_with(
-                {"_id": mock_id}
-            )
+        # Assert that the response is successful
+        assert response.status_code == status.HTTP_200_OK
 
-    @pytest.mark.asyncio
-    async def test_add_centre_duplicate_error(self, mock_emergency_handler):
+        # Assert that the handler method was called with correct parameters
+        mock_handler_instance.add_centre.assert_called_once_with(centre_data)
+
+        # Check the response structure follows ResponseModel pattern
+        response_data = response.json()
+        assert "data" in response_data
+        assert "message" in response_data
+        # The data is wrapped in a list in the response
+        assert response_data["data"] == [created_centre]
+        assert response_data["message"] == "Centre added successfully"
+
+    def test_create_centre_validation_error(self, client):
+        """Test validation error when adding a centre with missing required fields."""
+        # Missing required fields: state and facility_type
+        incomplete_data = {
+            "facility_name": "Test Hospital",
+            "district": "Test District",
+            "latitude": 40.7128,
+            "longitude": -74.0060,
+        }
+
+        # Make the request
+        response = client.post(
+            "/v1/emergencyCentre/create",
+            json=incomplete_data,
+        )
+
+        # Assert that the response is a validation error
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+    @patch("src.routes.emergency_centres.EmergencyCentreHandler")
+    @patch("src.routes.emergency_centres.jsonable_encoder")
+    def test_create_centre_duplicate_error(
+        self, mock_jsonable_encoder, mock_handler_class, client
+    ):
         """Test handling of duplicate key errors when adding an emergency centre."""
         centre_data = {
             "facility_name": "Test Hospital",
             "district": "Test District",
             "latitude": 40.7128,
             "longitude": -74.0060,
-            "state": "Test State",  # Added required field
-            "facility_type": "Hospital",  # Added required field
+            "state": "Test State",
+            "facility_type": "Hospital",
         }
 
-        # Mock model_validate to avoid validation errors
-        with patch(
-            "src.models.emergency_centres.EmergencyCentre.model_validate"
-        ) as mock_validate:
-            # Create a mock validated model that has model_dump method
-            validated_model = MagicMock()
-            validated_model.model_dump.return_value = centre_data.copy()
-            mock_validate.return_value = validated_model
+        # Configure the jsonable_encoder mock
+        mock_jsonable_encoder.return_value = centre_data
 
-            # Configure the insert_one method to raise DuplicateKeyError
-            mock_emergency_handler.collection.insert_one.side_effect = (
-                DuplicateKeyError("Duplicate key error")
-            )
+        # Configure the handler instance mock
+        mock_handler_instance = AsyncMock()
+        mock_handler_class.return_value = mock_handler_instance
 
-            with pytest.raises(DuplicateKeyError):
-                await mock_emergency_handler.add_centre(centre_data)
+        # Configure the add_centre method to raise DuplicateKeyError
+        mock_handler_instance.add_centre.side_effect = DuplicateKeyError(
+            "Duplicate key error"
+        )
 
-            mock_emergency_handler.collection.insert_one.assert_called_once()
+        # Make the request
+        response = client.post(
+            "/v1/emergencyCentre/create",
+            json=centre_data,
+        )
+
+        # Assert response code and error details
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        response_data = response.json()
+        assert response_data["error"] == "Duplicate Entry"
+        assert (
+            "Emergency Centre with the same unique field already exists"
+            in response_data["message"]
+        )
+
+    @patch("src.routes.emergency_centres.EmergencyCentreHandler")
+    @patch("src.routes.emergency_centres.jsonable_encoder")
+    def test_create_centre_other_exception(
+        self, mock_jsonable_encoder, mock_handler_class, client
+    ):
+        """Test handling of other exceptions when adding an emergency centre."""
+        centre_data = {
+            "facility_name": "Test Hospital",
+            "district": "Test District",
+            "latitude": 40.7128,
+            "longitude": -74.0060,
+            "state": "Test State",
+            "facility_type": "Hospital",
+        }
+
+        # Configure the jsonable_encoder mock
+        mock_jsonable_encoder.return_value = centre_data
+
+        # Configure the handler instance mock
+        mock_handler_instance = AsyncMock()
+        mock_handler_class.return_value = mock_handler_instance
+
+        # Configure the add_centre method to raise a general Exception
+        error_message = "Database connection error"
+        mock_handler_instance.add_centre.side_effect = Exception(error_message)
+
+        # Make the request
+        response = client.post(
+            "/v1/emergencyCentre/create",
+            json=centre_data,
+        )
+
+        # Assert response code and error details
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        response_data = response.json()
+        assert "Error occured while creating Centre" in response_data["message"]
