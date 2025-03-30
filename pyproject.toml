@@ -52,4 +52,5 @@ dependencies = [
 [dependency-groups]
 dev = [
     "mongomock>=4.3.0",
+    "pandas>=2.2.3",
 ]

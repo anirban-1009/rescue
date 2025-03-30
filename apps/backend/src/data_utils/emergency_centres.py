@@ -8,6 +8,8 @@ from pymongo.errors import DuplicateKeyError
 
 from src.data_utils.baseHandler import BaseMongoHandler
 from src.models.emergency_centres import EmergencyCentre
+from src.utils.com_utils import replace_nan
+from src.utils.enums import CentreType
 
 
 class EmergencyCentreHandler(BaseMongoHandler):
@@ -47,7 +49,12 @@ class EmergencyCentreHandler(BaseMongoHandler):
             raise RuntimeError(f"Database Error: {str(e)}")
 
     async def get_emergency_centres_nearby(
-        self, latitude, longitude, max_distance=5000, limit=5
+        self,
+        latitude,
+        longitude,
+        centre_type: CentreType,
+        max_distance=5000,
+        limit=5,
     ):
         # Calculate distance with Haversine formula
         pipeline = [
@@ -95,6 +102,7 @@ class EmergencyCentreHandler(BaseMongoHandler):
             },
             # Filter, sort, limit - the most critical operations
             {"$match": {"distance": {"$lte": max_distance}}},
+            {"$match": {"facility_type": centre_type}},
             {"$sort": {"distance": 1}},
             {"$limit": limit},
             # Handle ObjectId serialization
@@ -103,10 +111,9 @@ class EmergencyCentreHandler(BaseMongoHandler):
 
         results = await self.collection.aggregate(pipeline).to_list(length=None)
 
-        # Additional safety measure: convert all results to JSON-compatible objects
         json_compatible = json.loads(json_util.dumps(results))
 
-        return json_compatible
+        return replace_nan(json_compatible)
 
 
 def ResponseModel(data: Optional[EmergencyCentre], message: str):
