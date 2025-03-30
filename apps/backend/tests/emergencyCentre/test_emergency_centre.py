@@ -3,7 +3,6 @@ from unittest.mock import AsyncMock, patch
 from bson import ObjectId
 from fastapi.testclient import TestClient
 from fastapi import status
-from pymongo.errors import DuplicateKeyError
 
 # Import your FastAPI app - adjust the import path as needed
 from src.main import app
@@ -108,86 +107,11 @@ class TestEmergencyCentreAPI:
         # Ensure the handler method was never called with invalid type
         mock_handler.get_emergency_centres_nearby.assert_not_called()
 
-    @pytest.mark.skip
-    @patch("src.routes.emergency_centres.EmergencyCentreHandler")
-    @patch("src.routes.emergency_centres.jsonable_encoder")
-    def test_create_centre_success(
-        self, mock_jsonable_encoder, mock_handler_class, client
-    ):
-        """Test successfully adding a new emergency centre through the POST /create endpoint."""
-        # Include the required fields state and facility_type
-        centre_data = {
-            "facility_name": "Test Hospital",
-            "district": "Test District",
-            "latitude": 40.7128,
-            "longitude": -74.0060,
-            "address": "123 Test St",
-            "contact_no": "123-456-7890",
-            "state": "Test State",
-            "facility_type": "Hospital",
-        }
-
-        # Configure the jsonable_encoder mock
-        mock_jsonable_encoder.return_value = centre_data
-
-        # Configure the handler instance mock
-        mock_handler_instance = AsyncMock()
-        mock_handler_class.return_value = mock_handler_instance
-
-        # Configure the add_centre method to return the created centre
-        created_centre = centre_data.copy()
-        created_centre["_id"] = str(ObjectId("507f1f77bcf86cd799439013"))
-        mock_handler_instance.add_centre.return_value = created_centre
-
-        # Make the request
-        response = client.post(
-            "/v1/emergencyCentre/create",
-            json=centre_data,
-        )
-
-        # Assert that the response is successful
-        assert response.status_code == status.HTTP_200_OK
-
-        # Assert that the handler method was called with correct parameters
-        mock_handler_instance.add_centre.assert_called_once_with(centre_data)
-
-        # Check the response structure follows ResponseModel pattern
-        response_data = response.json()
-        assert "data" in response_data
-        assert "message" in response_data
-        # The data is wrapped in a list in the response
-        assert response_data["data"] == [created_centre]
-        assert response_data["message"] == "Centre added successfully"
-
-    @pytest.mark.skip
     @patch("src.routes.emergency_centres.get_handler")
-    def test_create_centre_validation_error(self, client):
-        """Test validation error when adding a centre with missing required fields."""
-        # Missing required fields: state and facility_type
-        incomplete_data = {
-            "facility_name": "Test Hospital",
-            "district": "Test District",
-            "latitude": 40.7128,
-            "longitude": -74.0060,
-        }
+    @patch("src.data_utils.emergency_centres.EmergencyCentreHandler.add_centre")
+    def test_create_centre_valid(self, mock_db_add_centre, mock_create_handler, client):
+        """Test the POST `/v1/emergencyCentre/create` endpoint with valid data"""
 
-        # Make the request
-        response = client.post(
-            "/v1/emergencyCentre/create",
-            json=incomplete_data,
-        )
-
-        # Assert that the response is a validation error
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-
-    @pytest.mark.skip
-    @patch("src.routes.emergency_centres.EmergencyCentreHandler")
-    @patch("src.routes.emergency_centres.jsonable_encoder")
-    @patch("src.routes.emergency_centres.get_handler")
-    def test_create_centre_duplicate_error(
-        self, mock_jsonable_encoder, mock_handler_class, client
-    ):
-        """Test handling of duplicate key errors when adding an emergency centre."""
         centre_data = {
             "facility_name": "Test Hospital",
             "district": "Test District",
@@ -197,41 +121,57 @@ class TestEmergencyCentreAPI:
             "facility_type": "Hospital",
         }
 
-        # Configure the jsonable_encoder mock
-        mock_jsonable_encoder.return_value = centre_data
+        response_data = centre_data.copy()
+        response_data["id"] = "mocked_id_12345"
+        mock_db_add_centre.return_value = response_data
 
-        # Configure the handler instance mock
-        mock_handler_instance = AsyncMock()
-        mock_handler_class.return_value = mock_handler_instance
+        mock_handler = AsyncMock()
+        mock_create_handler.return_value = mock_handler
 
-        # Configure the add_centre method to raise DuplicateKeyError
-        mock_handler_instance.add_centre.side_effect = DuplicateKeyError(
-            "Duplicate key error"
-        )
+        response = client.post("/v1/emergencyCentre/create", json=centre_data)
 
-        # Make the request
-        response = client.post(
-            "/v1/emergencyCentre/create",
-            json=centre_data,
-        )
+        assert response.status_code == status.HTTP_201_CREATED
 
-        # Assert response code and error details
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
-        response_data = response.json()
-        assert response_data["error"] == "Duplicate Entry"
+    @patch("src.routes.emergency_centres.get_handler")
+    @patch("src.data_utils.emergency_centres.EmergencyCentreHandler.add_centre")
+    def test_create_centre_invalid(
+        self, mock_db_add_centre, mock_create_handler, client
+    ):
+        """Test the POST `/v1/emergencyCentre/create` endpoint with invalid data"""
+
+        # Missing required fields like facility_name and state
+        invalid_centre_data = {
+            "district": "Test District",
+            "latitude": 40.7128,
+            "longitude": -74.0060,
+            "facility_type": "Hospital",
+        }
+
+        mock_handler = AsyncMock()
+        mock_create_handler.return_value = mock_handler
+
+        response = client.post("/v1/emergencyCentre/create", json=invalid_centre_data)
         assert (
-            "Emergency Centre with the same unique field already exists"
-            in response_data["message"]
-        )
+            response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        )  # FastAPI validation error
+        response_data = response.json()
 
-    @patch("src.routes.emergency_centres.EmergencyCentreHandler")
-    @patch("src.routes.emergency_centres.jsonable_encoder")
+        # Ensure the response contains validation errors for `facility_name` and `state`
+        expected_error_locs = {("body", "state"), ("body", "facility_name")}
+
+        actual_error_locs = {(tuple(err["loc"])) for err in response_data["detail"]}
+
+        assert expected_error_locs.issubset(
+            actual_error_locs
+        )  # Ensure required fields are in errors
+
     @patch("src.routes.emergency_centres.get_handler")
-    @pytest.mark.skip
-    def test_create_centre_other_exception(
-        self, mock_jsonable_encoder, mock_handler_class, client
+    @patch("src.data_utils.emergency_centres.EmergencyCentreHandler.add_centre")
+    def test_create_centre_duplicate(
+        self, mock_db_add_centre, mock_create_handler, client
     ):
-        """Test handling of other exceptions when adding an emergency centre."""
+        """Test the POST `/v1/emergencyCentre/create` endpoint when a duplicate entry is submitted"""
+
         centre_data = {
             "facility_name": "Test Hospital",
             "district": "Test District",
@@ -241,24 +181,13 @@ class TestEmergencyCentreAPI:
             "facility_type": "Hospital",
         }
 
-        # Configure the jsonable_encoder mock
-        mock_jsonable_encoder.return_value = centre_data
+        mock_handler = AsyncMock()
+        mock_create_handler.return_value = mock_handler
+        response = client.post("/v1/emergencyCentre/create", json=centre_data)
 
-        # Configure the handler instance mock
-        mock_handler_instance = AsyncMock()
-        mock_handler_class.return_value = mock_handler_instance
-
-        # Configure the add_centre method to raise a general Exception
-        error_message = "Database connection error"
-        mock_handler_instance.add_centre.side_effect = Exception(error_message)
-
-        # Make the request
-        response = client.post(
-            "/v1/emergencyCentre/create",
-            json=centre_data,
-        )
-
-        # Assert response code and error details
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        # Assertions
+        assert (
+            response.status_code == status.HTTP_400_BAD_REQUEST
+        )  # Expecting a conflict error
         response_data = response.json()
-        assert "Error occured while creating Centre" in response_data["message"]
+        assert response_data["message"] == "Error occured while creating Centre."

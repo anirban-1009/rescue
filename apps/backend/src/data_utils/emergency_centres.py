@@ -1,8 +1,6 @@
 from bson import json_util
 import json
-from typing import Optional
 
-from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 from pymongo.errors import DuplicateKeyError
 
@@ -114,10 +112,3 @@ class EmergencyCentreHandler(BaseMongoHandler):
         json_compatible = json.loads(json_util.dumps(results))
 
         return replace_nan(json_compatible)
-
-
-def ResponseModel(data: Optional[EmergencyCentre], message: str):
-    return JSONResponse(
-        status_code=200,
-        content={"data": [data] if data else [], "code": 200, "message": message},
-    )

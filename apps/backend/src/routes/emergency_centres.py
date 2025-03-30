@@ -7,8 +7,8 @@ from pymongo.errors import DuplicateKeyError
 from src.models.emergency_centres import EmergencyCentre
 from src.data_utils.emergency_centres import (
     EmergencyCentreHandler,
-    ResponseModel,
 )
+from src.data_utils.baseHandler import ResponseModel
 from src.utils.error_handlers import ErrorResponseModel
 from src.utils.enums import CentreType
 
@@ -30,7 +30,9 @@ async def insert_centre(
     emergencyCentre = jsonable_encoder(centre_data)
     try:
         newEmergencyCentre: EmergencyCentre = await handler.add_centre(emergencyCentre)
-        return ResponseModel(newEmergencyCentre, "Centre added successfully")
+        return ResponseModel(
+            newEmergencyCentre, "Centre added successfully", status_code=201
+        )
 
     except DuplicateKeyError as e:
         print(e)

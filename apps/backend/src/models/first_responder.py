@@ -1,8 +1,5 @@
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel, EmailStr, Field
-from typing import Annotated, Literal, Optional
-
-from src.data_utils.data_classes import FirstResponder
+from typing import Annotated, Literal
 
 
 class FirstResponderSchema(BaseModel):
@@ -22,10 +19,3 @@ class FirstResponderSchema(BaseModel):
                 "service": "Fire Department",
             }
         }
-
-
-def ResponseModel(data: Optional[FirstResponder], message: str):
-    return JSONResponse(
-        status_code=200,
-        content={"data": [data] if data else [], "code": 200, "message": message},
-    )

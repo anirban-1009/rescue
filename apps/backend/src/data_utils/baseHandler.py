@@ -3,6 +3,7 @@
 import os
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 from typing import TypedDict
+from fastapi.responses import JSONResponse
 
 
 class DatabaseClass(TypedDict):
@@ -24,3 +25,14 @@ class BaseMongoHandler:
             MONGO_DETAILS
         )
         self.database: AsyncIOMotorDatabase[DatabaseClass] = self.client.Rescue
+
+
+def ResponseModel(data, message: str, status_code: int):
+    return JSONResponse(
+        status_code=status_code,
+        content={
+            "data": [data] if data else [],
+            "code": status_code,
+            "message": message,
+        },
+    )
