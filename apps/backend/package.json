@@ -5,7 +5,7 @@
     "scripts": {
         "dev": "PYTHONPATH=$(pwd)/apps/backend uvicorn src.main:app --reload --port 8000",
         "start": "PYTHONPATH=$(pwd)/apps/backend uvicorn backend.src.main:app --port 8000",
-        "build": "PYTHONPATH=$(pwd)/apps/backend pytest --verbose || echo 'No tests found, skipping...'"
+        "build": "PYTHONPATH=. pytest --verbose || echo 'No tests found, skipping...'"
     },
     "dependencies": {},
     "devDependencies": {

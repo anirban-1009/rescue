@@ -49,15 +49,15 @@ async def insert_centre(centre_data: EmergencyCentre = Body(...)):
 @router.get("/getNearMe", response_description="Centres near the coordinates")
 async def get_centre(
     latitude: float = Query(
-        ..., description="Latitude of the location", example=17.4493194
+        ..., description="Latitude of the location", examples=17.4493194
     ),
     longitude: float = Query(
-        ..., description="Longitude of the location", example=78.3749978
+        ..., description="Longitude of the location", examples=78.3749978
     ),
     max_distance: int = Query(
-        5000, description="Max distance in meters (default: 5000)", example=5000
+        5000, description="Max distance in meters (default: 5000)", examples=5000
     ),
-    limit: int = Query(5, description="Max centres to be fetched", example=5),
+    limit: int = Query(5, description="Max centres to be fetched", examples=5),
     handler: EmergencyCentreHandler = Depends(get_handler),
 ):
     """
