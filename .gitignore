@@ -45,4 +45,4 @@ package-lock.json
 
 *.pyc
 uv.lock
-_emergencyCentres.json
+emergencyCentres.json
