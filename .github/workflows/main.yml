@@ -14,18 +14,10 @@ jobs:
             matrix:
                 node-version: [22.x]
                 python-version: ["3.12", "3.13"]
-                mongodb-version: ["4.2", "4.4"]
 
         steps:
             - name: Checkout code
               uses: actions/checkout@v3
-
-            # -
-            #   name: Login to Docker Hub
-            #   uses: docker/login-action@v3
-            #   env:
-            #     username: ${{ vars.DOCKERHUB_USERNAME }}
-            #     password: ${{ secrets.DOCKERHUB_TOKEN }}
 
             - name: Setup Node.js
               uses: actions/setup-node@v3
@@ -35,27 +27,27 @@ jobs:
             - name: Set up Python
               uses: actions/setup-python@v4
               with:
-                  python-version: ${{matrix.python-version}}
+                  python-version: ${{ matrix.python-version }}
 
-            - name: Start MongoDB
-              uses: supercharge/mongodb-github-action@1.6.0
-              with:
-                  mongodb-version: ${{ matrix.mongodb-version }}
-                  mongodb-replica-set: test-rs
-                  mongodb-port: 42069
-
-            - name: Install dependencies
+            - name: Install `uv`
               run: |
-                  python -m venv .venv
+                  curl -LsSf https://astral.sh/uv/install.sh | sh
+                  echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+            - name: Install Python dependencies with `uv`
+              run: |
+                  uv venv .venv
                   source .venv/bin/activate
-                  pip install --upgrade pip
-                  pip install -r requirements.txt
-                  npm install
+                  uv sync
+
+            - name: Install Repo dependecies
+              run: |
+                  npm install --legacy-peer-deps
 
             - name: Install frontend dependencies
               run: |
                   cd apps/frontend
-                  npm install
+                  npm install --legacy-peer-deps
 
             - name: Disable telemetry
               run: |
@@ -66,5 +58,3 @@ jobs:
               run: |
                   source .venv/bin/activate
                   npm run build
-              env:
-                  MONGODB_URL: "mongodb://localhost:42069"
