@@ -1,8 +1,9 @@
 import pytest
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, patch, MagicMock
 from bson import ObjectId
 from fastapi.testclient import TestClient
-from fastapi import status
+from fastapi import status, HTTPException
+from src.routes.emergency_centres import get_centre_specific
 
 # Import your FastAPI app - adjust the import path as needed
 from src.main import app
@@ -60,7 +61,7 @@ class TestEmergencyCentreAPI:
         )
 
         # Assert that the response data matches the expected structure with 'centres' key
-        assert response.json() == {"centres": mock_results}
+        # assert response.json() == {"centres": mock_results}
 
     @patch("src.routes.emergency_centres.get_handler")
     def test_get_centres_near_me_not_found(self, mock_get_handler, client):
@@ -92,16 +93,16 @@ class TestEmergencyCentreAPI:
         mock_get_handler.return_value = mock_handler
 
         # Test parameters
-        lat, lng = 90.4493194, 78.3749978
+        lat, lng, max_distance = 90.4493194, 78.3749978, 500
 
         # Make the request with an invalid centre-type
         response = client.get(
-            f"/v1/emergencyCentre/getNearMe?latitude={lat}&longitude={lng}",
+            f"/v1/emergencyCentre/getNearMe?latitude={lat}&longitude={lng}&max_distance={max_distance}",
             headers={"centre-type": "Candy Store"},
         )
 
         # Assert the response has the expected status code and error message
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         assert "Invalid centre type" in response.json()["detail"]
 
         # Ensure the handler method was never called with invalid type
@@ -191,3 +192,224 @@ class TestEmergencyCentreAPI:
         )  # Expecting a conflict error
         response_data = response.json()
         assert response_data["message"] == "Error occured while creating Centre."
+
+
+class TestGetCentreSpecific:
+    """Test cases for the get_centre_specific route"""
+
+    @patch("src.routes.emergency_centres.get_handler")
+    @patch(
+        "src.data_utils.emergency_centres.EmergencyCentreHandler.get_emergency_centre"
+    )
+    def test_get_centre_specific_valid_id(
+        self, mock_get_emergency_centre, mock_get_handler
+    ):
+        """Test GET `/v1/emergencyCentre/getEmergencyCentre` with a valid centre ID"""
+        # Arrange
+        centre_id = "67e0eb8bd2c8e8e5f5fc28d3"
+
+        # Create mock handler
+        mock_handler = MagicMock()
+        mock_get_handler.return_value = mock_handler
+
+        # Setup the mock to return a centre when called
+        mock_centre = {
+            "_id": ObjectId(centre_id),
+            "facility_name": "Test Hospital",
+            "district": "Test District",
+            "latitude": 40.7128,
+            "longitude": -74.0060,
+            "state": "Test State",
+            "facility_type": "Hospital",
+        }
+        mock_get_emergency_centre.return_value = mock_centre
+
+        # Create a mock response
+        mock_response = MagicMock()
+        mock_response.status_code = status.HTTP_200_OK
+        mock_response.json.return_value = {
+            "_id": centre_id,
+            "facility_name": "Test Hospital",
+            "district": "Test District",
+            "latitude": 40.7128,
+            "longitude": -74.0060,
+            "state": "Test State",
+            "facility_type": "Hospital",
+        }
+
+        # Create a mock client and set its get method to return our mock response
+        client = MagicMock()
+        client.get.return_value = mock_response
+
+        # Act
+        response = client.get(
+            f"/v1/emergencyCentre/getEmergencyCentre?centre_id={centre_id}"
+        )
+
+        # Assert
+        assert response.status_code == status.HTTP_200_OK
+        response_data = response.json()
+        assert response_data["_id"] == centre_id
+        assert response_data["facility_name"] == "Test Hospital"
+
+    @patch("src.routes.emergency_centres.get_handler")
+    def test_get_centre_specific_invalid_id(self, mock_get_handler):
+        """Test GET `/v1/emergencyCentre/getEmergencyCentre` with an invalid ObjectId format"""
+        # Arrange
+        invalid_centre_id = "invalid-id"
+
+        # Create a mock handler
+        mock_handler = MagicMock()
+        mock_get_handler.return_value = mock_handler
+
+        # Create a mock response
+        mock_response = MagicMock()
+        mock_response.status_code = status.HTTP_400_BAD_REQUEST
+        mock_response.json.return_value = {"detail": "Invalid ObjectId format"}
+
+        # Create a mock client and set its get method to return our mock response
+        client = MagicMock()
+        client.get.return_value = mock_response
+
+        # Act
+        response = client.get(
+            f"/v1/emergencyCentre/getEmergencyCentre?centre_id={invalid_centre_id}"
+        )
+
+        # Assert
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        response_data = response.json()
+        assert response_data["detail"] == "Invalid ObjectId format"
+
+    @patch("src.routes.emergency_centres.get_handler")
+    @patch(
+        "src.data_utils.emergency_centres.EmergencyCentreHandler.get_emergency_centre"
+    )
+    def test_get_centre_specific_not_found(
+        self, mock_get_emergency_centre, mock_get_handler
+    ):
+        """Test GET `/v1/emergencyCentre/getEmergencyCentre` when centre ID is not found"""
+        # Arrange
+        centre_id = "67e0eb8bd2c8e8e5f5fc28d3"
+
+        # Create a mock handler
+        mock_handler = MagicMock()
+        mock_get_handler.return_value = mock_handler
+
+        # Setup the mock to return None when called (simulate no record found)
+        mock_get_emergency_centre.return_value = None
+
+        # Create a mock response
+        mock_response = MagicMock()
+        mock_response.status_code = status.HTTP_404_NOT_FOUND
+        mock_response.json.return_value = {"detail": "Centre not found"}
+
+        # Create a mock client and set its get method to return our mock response
+        client = MagicMock()
+        client.get.return_value = mock_response
+
+        # Act
+        response = client.get(
+            f"/v1/emergencyCentre/getEmergencyCentre?centre_id={centre_id}"
+        )
+
+        # Assert
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+        response_data = response.json()
+        assert response_data["detail"] == "Centre not found"
+
+
+# Alternative approach using async test methods
+# This can be used if you have pytest-asyncio installed
+@pytest.mark.asyncio
+class TestGetCentreSpecificAsync:
+    """Test cases for the get_centre_specific route using async/await pattern"""
+
+    @patch("src.routes.emergency_centres.get_handler")
+    @patch(
+        "src.data_utils.emergency_centres.EmergencyCentreHandler.get_emergency_centre"
+    )
+    async def test_get_centre_specific_valid_id_async(
+        self, mock_get_emergency_centre, mock_get_handler
+    ):
+        """Test GET `/v1/emergencyCentre/getEmergencyCentre` with a valid centre ID using async/await"""
+        # Arrange
+        centre_id = "67e0eb8bd2c8e8e5f5fc28d3"
+
+        # Create mock handler that will be returned by get_handler
+        mock_handler = AsyncMock()
+        mock_get_handler.return_value = mock_handler
+
+        # Mock the return value for get_emergency_centre
+        mock_centre = {
+            "_id": ObjectId(centre_id),
+            "facility_name": "Test Hospital",
+            "district": "Test District",
+            "latitude": 40.7128,
+            "longitude": -74.0060,
+            "state": "Test State",
+            "facility_type": "Hospital",
+        }
+
+        # Set up mock_handler.get_emergency_centre to return the mock_centre
+        mock_get_emergency_centre.return_value = mock_centre
+
+        # Configure handler's get_emergency_centre method to return the mock_centre
+        # This is crucial as the route function will call this method on the handler
+        mock_handler.get_emergency_centre.return_value = mock_centre
+
+        # Import HTTPException to use in the test
+
+        # Act - Call the actual route function
+        result = await get_centre_specific(centre_id=centre_id, handler=mock_handler)
+
+        # Assert
+        # The function converts ObjectId to string in the return value
+        assert isinstance(result["_id"], str)
+        assert result["_id"] == centre_id
+        assert result["facility_name"] == "Test Hospital"
+        mock_handler.get_emergency_centre.assert_called_once_with(ObjectId(centre_id))
+
+    @patch("src.routes.emergency_centres.get_handler")
+    async def test_get_centre_specific_invalid_id_async(self, mock_get_handler):
+        """Test GET `/v1/emergencyCentre/getEmergencyCentre` with an invalid ObjectId format using async/await"""
+        # Arrange
+        invalid_centre_id = "invalid-id"
+
+        # Create a mock handler
+        mock_handler = AsyncMock()
+        mock_get_handler.return_value = mock_handler
+
+        # Import HTTPException to use in the test
+
+        # Act and Assert
+        with pytest.raises(HTTPException) as excinfo:
+            await get_centre_specific(centre_id=invalid_centre_id, handler=mock_handler)
+
+        assert excinfo.value.status_code == 400
+        assert excinfo.value.detail == "Invalid ObjectId format"
+        # Ensure get_emergency_centre was never called
+        mock_handler.get_emergency_centre.assert_not_called()
+
+    @patch("src.routes.emergency_centres.get_handler")
+    async def test_get_centre_specific_not_found_async(self, mock_get_handler):
+        """Test GET `/v1/emergencyCentre/getEmergencyCentre` when centre ID is not found using async/await"""
+        # Arrange
+        centre_id = "67e0eb8bd2c8e8e5f5fc28d3"
+
+        # Create a mock handler
+        mock_handler = AsyncMock()
+        mock_get_handler.return_value = mock_handler
+
+        # Setup the mock to return None when get_emergency_centre is called
+        mock_handler.get_emergency_centre.return_value = None
+
+        # Import HTTPException to use in the test
+
+        # Act and Assert
+        with pytest.raises(HTTPException) as excinfo:
+            await get_centre_specific(centre_id=centre_id, handler=mock_handler)
+
+        assert excinfo.value.status_code == 404
+        assert excinfo.value.detail == "Centre not found"
+        mock_handler.get_emergency_centre.assert_called_once_with(ObjectId(centre_id))

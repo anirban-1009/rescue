@@ -1,5 +1,6 @@
 from typing import Optional
 from pydantic import BaseModel, Field
+from src.utils.enums import CentreType
 
 
 class EmergencyCentre(BaseModel):
@@ -7,7 +8,7 @@ class EmergencyCentre(BaseModel):
     district: str = Field(..., title="District Name")
     taluka: Optional[str] = Field(None, title="Taluka or Sub-District")
     facility_name: str = Field(..., title="Name of the Facility")
-    facility_type: str = Field(
+    facility_type: CentreType = Field(
         ..., title="Type of Facility (Fire Station, Hospital, etc.)"
     )
     latitude: float = Field(..., title="Latitude of Facility")

@@ -1,4 +1,4 @@
-from bson import json_util
+from bson import json_util, ObjectId
 import json
 
 from pydantic import ValidationError
@@ -8,6 +8,7 @@ from src.data_utils.baseHandler import BaseMongoHandler
 from src.models.emergency_centres import EmergencyCentre
 from src.utils.com_utils import replace_nan
 from src.utils.enums import CentreType
+from src.utils.errors import SearchLimitError
 
 
 class EmergencyCentreHandler(BaseMongoHandler):
@@ -51,7 +52,7 @@ class EmergencyCentreHandler(BaseMongoHandler):
         latitude,
         longitude,
         centre_type: CentreType,
-        max_distance=5000,
+        max_distance=500,
         limit=5,
     ):
         # Calculate distance with Haversine formula
@@ -107,8 +108,15 @@ class EmergencyCentreHandler(BaseMongoHandler):
             {"$addFields": {"_id": {"$toString": "$_id"}}},
         ]
 
+        if max_distance > 1000:
+            raise SearchLimitError(max_distance)
+
         results = await self.collection.aggregate(pipeline).to_list(length=None)
 
         json_compatible = json.loads(json_util.dumps(results))
 
         return replace_nan(json_compatible)
+
+    async def get_emergency_centre(self, id: ObjectId):
+        results = await self.collection.find_one({"_id": id})
+        return results

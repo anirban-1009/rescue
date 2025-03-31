@@ -40,9 +40,8 @@ class CentreType(str, Enum):
         """
         valid_types = [e.value for e in cls]
         if value not in valid_types:
-            valid_types_str = ", ".join(f"'{t}'" for t in valid_types)
             raise HTTPException(
-                status_code=400,
-                detail=f"Invalid centre type: '{value}'. Valid types are: {valid_types_str}",
+                status_code=422,
+                detail=f"Invalid centre type: '{value}'. Valid types are: {valid_types}",
             )
         return value

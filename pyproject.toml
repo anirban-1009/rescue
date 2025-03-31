@@ -51,6 +51,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "google-search-results>=2.4.2",
     "mongomock>=4.3.0",
     "pandas>=2.2.3",
 ]
