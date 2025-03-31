@@ -1,5 +1,7 @@
 # Rescue
 
+[![Rescue Application build run](https://github.com/anirban-1009/rescue/actions/workflows/main.yml/badge.svg)](https://github.com/anirban-1009/rescue/actions/workflows/main.yml)
+
 An uniform platform to manage, the resposne of first responders to incidents, and managing the resources.
 
 ## Installation
