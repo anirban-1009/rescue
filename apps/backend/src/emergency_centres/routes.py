@@ -4,20 +4,20 @@ from fastapi import Query, HTTPException, Depends, Header
 from pymongo.errors import DuplicateKeyError
 from bson import ObjectId
 
-from src.models.emergency_centres import EmergencyCentre
-from src.data_utils.emergency_centres import (
+from src.emergency_centres.model import EmergencyCentre
+from src.emergency_centres.services import (
     EmergencyCentreHandler,
 )
-from src.data_utils.types import GetEmergencyCentreNearMeResponse
+from src.data_utils.data_types import GetEmergencyCentreNearMeResponse
 from src.data_utils.baseHandler import ResponseModel
-from src.utils.error_handlers import ErrorResponseModel
+from src.data_utils.baseHandler import ErrorResponseModel
 from src.utils.enums import CentreType
 
 router = APIRouter()
 
 
 async def get_handler():
-    from src.data_utils.emergency_centres import EmergencyCentreHandler
+    from src.emergency_centres.services import EmergencyCentreHandler
 
     return EmergencyCentreHandler()
 
