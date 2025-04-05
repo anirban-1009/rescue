@@ -62,12 +62,11 @@ jobs:
                   npx next telemetry disable
 
             - name: Run tests
-
+              run: |
+                  source .venv/bin/activate
+                  npm run build
               env:
                   AUTH0_DOMAIN: ${{ secrets.AUTH0_DOMAIN }}
                   AUTH0_CLIENT_ID: ${{ secrets.AUTH0_CLIENT_ID }}
                   AUTH0_CLIENT_SECRET: ${{ secrets.AUTH0_CLIENT_SECRET }}
-
-              run: |
-                  source .venv/bin/activate
-                  npm run build
+                  APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
