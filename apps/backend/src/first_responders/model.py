@@ -1,5 +1,6 @@
 from pydantic import BaseModel, EmailStr, Field
 from typing import Annotated, Literal
+from bson import ObjectId
 
 
 class FirstResponderSchema(BaseModel):
@@ -19,3 +20,14 @@ class FirstResponderSchema(BaseModel):
                 "service": "Fire Department",
             }
         }
+
+
+class FirstResponder(BaseModel):
+    """Model of FirstResponder to manage the firstresponder data type"""
+
+    _id: ObjectId
+    fullname: str
+    email: EmailStr
+    designation: Literal["Paramedic", "Firefighter", "Police Officer"]
+    service: str
+    age: int
