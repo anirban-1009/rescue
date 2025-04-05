@@ -10,19 +10,19 @@ jobs:
     build:
         runs-on: ubuntu-latest
 
+        env:
+            AUTH0_DOMAIN: ${{ secrets.AUTH0_DOMAIN }}
+            AUTH0_CLIENT_ID: ${{ secrets.AUTH0_CLIENT_ID }}
+            AUTH0_CLIENT_SECRET: ${{ secrets.AUTH0_CLIENT_SECRET }}
+            AUTH0_SECRET: ${{ secrets.AUTH0_SECRET }}
+            APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
+
         strategy:
             matrix:
                 node-version: [22.x]
                 python-version: ["3.12", "3.13"]
 
         steps:
-            - name: Setting up the env variables
-              env:
-                  AUTH0_DOMAIN: ${{ secrets.AUTH0_DOMAIN }}
-                  AUTH0_CLIENT_ID: ${{ secrets.AUTH0_CLIENT_ID }}
-                  APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
-                  AUTH0_SECRET: ${{ secrets.AUTH0_SECRET }}
-                  AUTH0_CLIENT_SECRET: ${{ secrets.AUTH0_CLIENT_SECRET }}
             - name: Checkout code
               uses: actions/checkout@v3
 
