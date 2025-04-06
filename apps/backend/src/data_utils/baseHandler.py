@@ -13,13 +13,7 @@ class DatabaseClass(TypedDict):
 
 class BaseMongoHandler:
     def __init__(self):
-        IS_CI = os.getenv("CI", "false") == "true"
-        MONGO_DETAILS = os.getenv(
-            "MONGODB_URL",
-            "mongodb://localhost:42069/?replicaSet=test-rs"
-            if IS_CI
-            else "mongodb://localhost:27017",
-        )
+        MONGO_DETAILS = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
 
         self.client: AsyncIOMotorClient[DatabaseClass] = AsyncIOMotorClient(
             MONGO_DETAILS

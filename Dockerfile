@@ -28,4 +28,4 @@ EXPOSE 8000
 ENV PYTHONPATH=/app
 
 # Start backend using the Python from the virtual environment
-CMD ["/bin/sh", "-c", ".venv/bin/python src/utils/seed.py && .venv/bin/uvicorn src.main:app --host 0.0.0.0 --port 8000"]
+CMD ["/bin/sh", "-c", ".venv/bin/uvicorn src.main:app --host 0.0.0.0 --port 8000"]

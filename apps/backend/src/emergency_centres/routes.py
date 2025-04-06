@@ -1,8 +1,10 @@
+import traceback
+from bson import ObjectId
+
 from fastapi import APIRouter, Body
 from fastapi.encoders import jsonable_encoder
 from fastapi import Query, HTTPException, Depends, Header
 from pymongo.errors import DuplicateKeyError
-from bson import ObjectId
 
 from src.emergency_centres.model import EmergencyCentre
 from src.emergency_centres.services import (
@@ -32,7 +34,9 @@ async def insert_centre(
     try:
         newEmergencyCentre: EmergencyCentre = await handler.add_centre(emergencyCentre)
         return ResponseModel(
-            newEmergencyCentre, "Centre added successfully", status_code=201
+            jsonable_encoder(newEmergencyCentre),
+            "Centre added successfully",
+            status_code=201,
         )
 
     except DuplicateKeyError:
@@ -43,10 +47,11 @@ async def insert_centre(
         )
 
     except Exception as e:
+        traceback.print_exc()  # Optional: logs full traceback in console
         return ErrorResponseModel(
-            error=e.__doc__,
+            error=str(e),
             code=400,
-            message="Error occured while creating Centre.",
+            message="Error occurred while creating Centre.",
         )
 
 
