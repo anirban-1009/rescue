@@ -16,7 +16,7 @@ class EmergencyCentreHandler(BaseMongoHandler):
 
     def __init__(self):
         super().__init__()
-        self.collection = self.database.get_collection("EmergencyCentre")
+        self.collection = self.database.get_collection("emergencyCentres")
 
         # Ensure unique constraints only on necessary fields (remove email)
         self.collection.create_index(
