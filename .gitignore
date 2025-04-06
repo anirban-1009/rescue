@@ -46,3 +46,5 @@ package-lock.json
 *.pyc
 uv.lock
 emergencyCentres.json
+*.csv
+_*

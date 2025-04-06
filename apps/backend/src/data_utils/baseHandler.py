@@ -13,13 +13,7 @@ class DatabaseClass(TypedDict):
 
 class BaseMongoHandler:
     def __init__(self):
-        IS_CI = os.getenv("CI", "false") == "true"
-        MONGO_DETAILS = os.getenv(
-            "MONGODB_URL",
-            "mongodb://localhost:42069/?replicaSet=test-rs"
-            if IS_CI
-            else "mongodb://localhost:27017",
-        )
+        MONGO_DETAILS = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
 
         self.client: AsyncIOMotorClient[DatabaseClass] = AsyncIOMotorClient(
             MONGO_DETAILS
@@ -28,6 +22,7 @@ class BaseMongoHandler:
 
 
 def ResponseModel(data, message: str, status_code: int):
+    """Response model handling data from endpoints"""
     return JSONResponse(
         status_code=status_code,
         content={
@@ -35,4 +30,11 @@ def ResponseModel(data, message: str, status_code: int):
             "code": status_code,
             "message": message,
         },
+    )
+
+
+def ErrorResponseModel(error: str, code: int, message: str):
+    """Response model for handling error"""
+    return JSONResponse(
+        status_code=code, content={"error": error, "code": code, "message": message}
     )

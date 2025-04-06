@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
-from src.data_utils.emergency_centres import EmergencyCentreHandler
+from src.emergency_centres.services import EmergencyCentreHandler
 
 
 class TestEmergencyCentreHandler:

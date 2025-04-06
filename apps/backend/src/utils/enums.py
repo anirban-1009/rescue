@@ -23,6 +23,7 @@ class CentreType(str, Enum):
     URBAN_HEALTH_WELLNESS_CENTER_UHWC = "Urban health and wellness center (UHWC)"
     WOMEN_HOSPITAL = "Women Hospital"
     YOGA_NATUROPATHY_DISPENSARY = "Yoga And Naturopathy dispensary"
+    POLICE_STATE = "Police Station"
 
     @classmethod
     def validate(cls, value: str) -> str:

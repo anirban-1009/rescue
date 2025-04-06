@@ -5,7 +5,7 @@ from pydantic import ValidationError
 from pymongo.errors import DuplicateKeyError
 
 from src.data_utils.baseHandler import BaseMongoHandler
-from src.models.emergency_centres import EmergencyCentre
+from src.emergency_centres.model import EmergencyCentre
 from src.utils.com_utils import replace_nan
 from src.utils.enums import CentreType
 from src.utils.errors import SearchLimitError
@@ -16,7 +16,7 @@ class EmergencyCentreHandler(BaseMongoHandler):
 
     def __init__(self):
         super().__init__()
-        self.collection = self.database.get_collection("EmergencyCentre")
+        self.collection = self.database.get_collection("emergencyCentres")
 
         # Ensure unique constraints only on necessary fields (remove email)
         self.collection.create_index(

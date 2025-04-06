@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, patch, MagicMock
 from bson import ObjectId
 from fastapi.testclient import TestClient
 from fastapi import status, HTTPException
-from src.routes.emergency_centres import get_centre_specific
+from src.emergency_centres.routes import get_centre_specific
 
 # Import your FastAPI app - adjust the import path as needed
 from src.main import app
@@ -16,7 +16,7 @@ class TestEmergencyCentreAPI:
         return TestClient(app)
 
     @patch(
-        "src.data_utils.emergency_centres.EmergencyCentreHandler.get_emergency_centres_nearby"
+        "src.emergency_centres.services.EmergencyCentreHandler.get_emergency_centres_nearby"
     )
     def test_get_centres_near_me(self, mock_get_centres_nearby, client):
         """Test the GET /v1/emergencyCentre/getNearMe endpoint."""
@@ -64,7 +64,7 @@ class TestEmergencyCentreAPI:
         # assert response.json() == {"centres": mock_results}
 
     @pytest.mark.skip
-    @patch("src.routes.emergency_centres.get_handler")
+    @patch("src.emergency_centres.routes.get_handler")
     def test_get_centres_near_me_not_found(self, mock_get_handler, client):
         """Test the GET /v1/emergencyCentre/getNearMe endpoint when no centres are found."""
         # Configure the mock handler
@@ -85,7 +85,7 @@ class TestEmergencyCentreAPI:
         assert response.status_code == status.HTTP_404_NOT_FOUND
         assert "No emergency centres found nearby" in response.json()["detail"]
 
-    @patch("src.routes.emergency_centres.get_handler")
+    @patch("src.emergency_centres.routes.get_handler")
     def test_get_centres_near_me_invalid_header(self, mock_get_handler, client):
         """Test the GET /v1/emergencyCentre/getNearMe endpoint with invalid centre-type header."""
         # Configure the mock handler
@@ -109,8 +109,8 @@ class TestEmergencyCentreAPI:
         # Ensure the handler method was never called with invalid type
         mock_handler.get_emergency_centres_nearby.assert_not_called()
 
-    @patch("src.routes.emergency_centres.get_handler")
-    @patch("src.data_utils.emergency_centres.EmergencyCentreHandler.add_centre")
+    @patch("src.emergency_centres.routes.get_handler")
+    @patch("src.emergency_centres.services.EmergencyCentreHandler.add_centre")
     def test_create_centre_valid(self, mock_db_add_centre, mock_create_handler, client):
         """Test the POST `/v1/emergencyCentre/create` endpoint with valid data"""
 
@@ -134,8 +134,8 @@ class TestEmergencyCentreAPI:
 
         assert response.status_code == status.HTTP_201_CREATED
 
-    @patch("src.routes.emergency_centres.get_handler")
-    @patch("src.data_utils.emergency_centres.EmergencyCentreHandler.add_centre")
+    @patch("src.emergency_centres.routes.get_handler")
+    @patch("src.emergency_centres.services.EmergencyCentreHandler.add_centre")
     def test_create_centre_invalid(
         self, mock_db_add_centre, mock_create_handler, client
     ):
@@ -167,8 +167,8 @@ class TestEmergencyCentreAPI:
             actual_error_locs
         )  # Ensure required fields are in errors
 
-    @patch("src.routes.emergency_centres.get_handler")
-    @patch("src.data_utils.emergency_centres.EmergencyCentreHandler.add_centre")
+    @patch("src.emergency_centres.routes.get_handler")
+    @patch("src.emergency_centres.services.EmergencyCentreHandler.add_centre")
     def test_create_centre_duplicate(
         self, mock_db_add_centre, mock_create_handler, client
     ):
@@ -198,10 +198,8 @@ class TestEmergencyCentreAPI:
 class TestGetCentreSpecific:
     """Test cases for the get_centre_specific route"""
 
-    @patch("src.routes.emergency_centres.get_handler")
-    @patch(
-        "src.data_utils.emergency_centres.EmergencyCentreHandler.get_emergency_centre"
-    )
+    @patch("src.emergency_centres.routes.get_handler")
+    @patch("src.emergency_centres.services.EmergencyCentreHandler.get_emergency_centre")
     def test_get_centre_specific_valid_id(
         self, mock_get_emergency_centre, mock_get_handler
     ):
@@ -253,7 +251,7 @@ class TestGetCentreSpecific:
         assert response_data["_id"] == centre_id
         assert response_data["facility_name"] == "Test Hospital"
 
-    @patch("src.routes.emergency_centres.get_handler")
+    @patch("src.emergency_centres.routes.get_handler")
     def test_get_centre_specific_invalid_id(self, mock_get_handler):
         """Test GET `/v1/emergencyCentre/getEmergencyCentre` with an invalid ObjectId format"""
         # Arrange
@@ -282,10 +280,8 @@ class TestGetCentreSpecific:
         response_data = response.json()
         assert response_data["detail"] == "Invalid ObjectId format"
 
-    @patch("src.routes.emergency_centres.get_handler")
-    @patch(
-        "src.data_utils.emergency_centres.EmergencyCentreHandler.get_emergency_centre"
-    )
+    @patch("src.emergency_centres.routes.get_handler")
+    @patch("src.emergency_centres.services.EmergencyCentreHandler.get_emergency_centre")
     def test_get_centre_specific_not_found(
         self, mock_get_emergency_centre, mock_get_handler
     ):
@@ -326,10 +322,8 @@ class TestGetCentreSpecific:
 class TestGetCentreSpecificAsync:
     """Test cases for the get_centre_specific route using async/await pattern"""
 
-    @patch("src.routes.emergency_centres.get_handler")
-    @patch(
-        "src.data_utils.emergency_centres.EmergencyCentreHandler.get_emergency_centre"
-    )
+    @patch("src.emergency_centres.routes.get_handler")
+    @patch("src.emergency_centres.services.EmergencyCentreHandler.get_emergency_centre")
     async def test_get_centre_specific_valid_id_async(
         self, mock_get_emergency_centre, mock_get_handler
     ):
@@ -371,7 +365,7 @@ class TestGetCentreSpecificAsync:
         assert result["facility_name"] == "Test Hospital"
         mock_handler.get_emergency_centre.assert_called_once_with(ObjectId(centre_id))
 
-    @patch("src.routes.emergency_centres.get_handler")
+    @patch("src.emergency_centres.routes.get_handler")
     async def test_get_centre_specific_invalid_id_async(self, mock_get_handler):
         """Test GET `/v1/emergencyCentre/getEmergencyCentre` with an invalid ObjectId format using async/await"""
         # Arrange
@@ -392,7 +386,7 @@ class TestGetCentreSpecificAsync:
         # Ensure get_emergency_centre was never called
         mock_handler.get_emergency_centre.assert_not_called()
 
-    @patch("src.routes.emergency_centres.get_handler")
+    @patch("src.emergency_centres.routes.get_handler")
     async def test_get_centre_specific_not_found_async(self, mock_get_handler):
         """Test GET `/v1/emergencyCentre/getEmergencyCentre` when centre ID is not found using async/await"""
         # Arrange
